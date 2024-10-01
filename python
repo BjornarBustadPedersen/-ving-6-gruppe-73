@@ -1,0 +1,88 @@
+import matplotlib
+matplotlib.use('Agg')  # Bruk ikke-interaktiv backend for miljøer uten display
+
+import matplotlib.pyplot as plt
+import datetime
+
+# Lister for å lagre tidspunkter, temperaturer og trykkverdier
+tider = []
+temperaturer = []
+trykkverdier = []
+
+# Filnavnet til input-filen
+filnavn = 'data.txt'  # Endre dette til navnet på filen din
+
+# Åpne filen og les linjene
+with open(filnavn, 'r', encoding='utf-8') as fil:
+    for linje in fil:
+        # Fjern eventuelle ledende og etterfølgende hvite tegn
+        linje = linje.strip()
+        # Sjekk om linjen ikke er tom
+        if linje:
+            # Del linjen ved semikolon
+            felt = linje.split(';')
+            # Sjekk om linjen har nok felt
+            if len(felt) >= 5:
+                # Ekstraher dato/tid, temperatur og trykk
+                dato_tid_str = felt[2]
+                temperatur_str = felt[3]
+                trykk_str = felt[4]
+                try:
+                    # Konverter temperatur og trykk til float (erstatt komma med punktum)
+                    temperatur = float(temperatur_str.replace(',', '.'))
+                    trykk = float(trykk_str.replace(',', '.'))
+                    # Konverter dato/tid-strengen til datetime-objekt
+                    dato_tid = datetime.datetime.strptime(dato_tid_str, '%d.%m.%Y %H:%M')
+                    # Legg til i listene
+                    tider.append(dato_tid)
+                    temperaturer.append(temperatur)
+                    trykkverdier.append(trykk)
+                except ValueError as e:
+                    print(f"Feil ved konvertering på linjen: {linje}\nFeilmelding: {e}")
+            else:
+                print(f"Ugyldig linjeformat: {linje}")
+
+# Sjekk om vi har data å plotte
+if tider and temperaturer and trykkverdier:
+    # Sorter dataene etter tid dersom de ikke allerede er sortert
+    data = sorted(zip(tider, temperaturer, trykkverdier))
+    tider, temperaturer, trykkverdier = zip(*data)
+
+    # Opprett figur og akser
+    fig, ax1 = plt.subplots(figsize=(10, 5))
+
+    # Plot temperatur på venstre y-akse
+    color1 = 'tab:red'
+    ax1.set_xlabel('Tid')
+    ax1.set_ylabel('Temperatur (°C)', color=color1)
+    ax1.plot(tider, temperaturer, marker='o', linestyle='-', color=color1, label='Temperatur')
+    ax1.tick_params(axis='y', labelcolor=color1)
+
+    # Opprett en andre y-akse for trykk
+    ax2 = ax1.twinx()  # deler x-aksen med ax1
+    color2 = 'tab:blue'
+    ax2.set_ylabel('Trykk (hPa)', color=color2)
+    ax2.plot(tider, trykkverdier, marker='s', linestyle='--', color=color2, label='Trykk')
+    ax2.tick_params(axis='y', labelcolor=color2)
+
+    # Legg til tittel og grid
+    plt.title('Temperatur og Trykk over tid')
+    ax1.grid(True)
+
+    # Rotér x-aksens etiketter for bedre lesbarhet
+    plt.xticks(rotation=45)
+
+    # Legg til en samlet legend
+    lines_1, labels_1 = ax1.get_legend_handles_labels()
+    lines_2, labels_2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines_1 + lines_2, labels_1 + labels_2, loc='upper left')
+
+    # Juster layout for å unngå overlapp
+    fig.tight_layout()
+
+    # Lagre plottet som en bildefil
+    plt.savefig('temperatur_trykk_plot.png')
+
+    print("Plottet er lagret som 'temperatur_trykk_plot.png'")
+else:
+    print("Ingen data tilgjengelig for plotting.")
