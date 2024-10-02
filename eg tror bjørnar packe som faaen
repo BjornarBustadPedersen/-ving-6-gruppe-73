@@ -1,0 +1,13 @@
+import pandas as pd
+
+
+
+df1 = pd.read_csv('C:/Users/zahid/OneDrive/Documents/MET data.txt', sep=';', encoding='utf8')
+
+df2= pd.read_csv('C:/Users/zahid/OneDrive/Documents/Trykk_og_temp_logg_rune.txt', sep=';', encoding='utf8')
+
+print("MET")
+print(df1.head())
+
+print("Rune Time")
+print(df2.head())
