@@ -1,0 +1,58 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Les data fra CSV-filen
+df1 = pd.read_csv('C:/Users/zahid/OneDrive/Documents/MET data.txt', sep=';', encoding='utf8')
+df1 = df1.apply(lambda x: x.astype(str).str.replace(',', '.'))
+
+# Vis de første radene i datasettet for å forsikre oss om at det ble lastet riktig
+print(df1.head())
+
+# Forsøk å konvertere 'Lufttemperatur' til numeriske verdier, og fjern eventuelle ikke-numeriske data
+df1['Lufttemperatur'] = pd.to_numeric(df1['Lufttemperatur'], errors='coerce')
+
+# Konverter 'Tid(norsk normaltid)' til datetime-objekter
+df1['Tid(norsk normaltid)'] = pd.to_datetime(df1['Tid(norsk normaltid)'], format='%d.%m.%Y %H:%M', errors='coerce')
+
+# Filtrer ut rader hvor temperatur eller tid ikke kunne konverteres (NaN)
+df1 = df1.dropna(subset=['Lufttemperatur', 'Tid(norsk normaltid)'])
+
+# Hent tidspunktene og temperaturene som lister
+tider = df1['Tid(norsk normaltid)'].tolist()  # Hent kolonnen med tidspunkter
+temperaturer = df1['Lufttemperatur'].tolist()  # Hent kolonnen med temperaturer
+
+df1 = df1.apply(lambda x: x.astype(str).str.replace(',', '.'))
+
+# Funksjon for å glatte temperaturer
+def glatt_temperaturer(tider, temperaturer, n):
+    glatte_tider = []
+    glatte_temp = []
+    
+    # Forsikre deg om at vi ikke går utenfor listenes grenser
+    for i in range(n, len(temperaturer) - n):
+        gjennomsnitt_temp = sum(temperaturer[i-n:i+n+1]) / (2*n + 1)
+        glatte_tider.append(tider[i])
+        glatte_temp.append(gjennomsnitt_temp)
+    
+    return glatte_tider, glatte_temp
+
+# Sette n = 5 for glatting
+n = 5
+glatte_tider, glatte_temp = glatt_temperaturer(tider, temperaturer, n)
+
+# Plot original og glattet temperatur
+plt.figure(figsize=(10, 5))
+
+# Plot originaltemperaturene med full lengde
+plt.plot(tider, temperaturer, label="Originale temperaturdata", alpha=0.7, color='blue')
+
+# Plot de glattede temperaturene som beregnet fra gyldige tidspunkter
+plt.plot(glatte_tider, glatte_temp, label=f"Glattet med n={n}", color='orange', linewidth=2)
+
+# Sett labels og formattering for plottet
+plt.xlabel('Tid')
+plt.ylabel('Temperatur (°C)')
+plt.xticks(rotation=45)  # Roter tidspunktene for bedre lesbarhet
+plt.legend()
+plt.tight_layout()  # Gjør layouten bedre for plottet
+plt.show()
