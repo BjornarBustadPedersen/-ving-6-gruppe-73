@@ -1,27 +1,25 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Les data fra CSV-filen
-df1 = pd.read_csv('C:/Users/zahid/OneDrive/Documents/MET data.txt', sep=';', encoding='utf8')
+# Les data fra CSV-filen og erstatt komma med punktum
+df1 = pd.read_csv('C:/Users/zahid/OneDrive/Documents/Trykk_og_temp_logg_rune.txt', sep=';', encoding='utf8')
 df1 = df1.apply(lambda x: x.astype(str).str.replace(',', '.'))
 
 # Vis de første radene i datasettet for å forsikre oss om at det ble lastet riktig
 print(df1.head())
 
-# Forsøk å konvertere 'Lufttemperatur' til numeriske verdier, og fjern eventuelle ikke-numeriske data
-df1['Lufttemperatur'] = pd.to_numeric(df1['Lufttemperatur'], errors='coerce')
+# Forsøk å konvertere 'Temperatur (gr Celsius)' til numeriske verdier, og fjern eventuelle ikke-numeriske data
+df1['Temperatur (gr Celsius)'] = pd.to_numeric(df1['Temperatur (gr Celsius)'], errors='coerce')
 
-# Konverter 'Tid(norsk normaltid)' til datetime-objekter
-df1['Tid(norsk normaltid)'] = pd.to_datetime(df1['Tid(norsk normaltid)'], format='%d.%m.%Y %H:%M', errors='coerce')
+# Konverter 'Dato og tid' til datetime-objekter
+df1['Dato og tid'] = pd.to_datetime(df1['Dato og tid'], format='%m.%d.%Y %H:%M', errors='coerce')
 
 # Filtrer ut rader hvor temperatur eller tid ikke kunne konverteres (NaN)
-df1 = df1.dropna(subset=['Lufttemperatur', 'Tid(norsk normaltid)'])
+df1 = df1.dropna(subset=['Temperatur (gr Celsius)', 'Dato og tid'])
 
 # Hent tidspunktene og temperaturene som lister
-tider = df1['Tid(norsk normaltid)'].tolist()  # Hent kolonnen med tidspunkter
-temperaturer = df1['Lufttemperatur'].tolist()  # Hent kolonnen med temperaturer
-
-df1 = df1.apply(lambda x: x.astype(str).str.replace(',', '.'))
+tider = df1['Dato og tid'].tolist()  # Hent kolonnen med tidspunkter
+temperaturer = df1['Temperatur (gr Celsius)'].tolist()  # Hent kolonnen med temperaturer
 
 # Funksjon for å glatte temperaturer
 def glatt_temperaturer(tider, temperaturer, n):
@@ -36,8 +34,8 @@ def glatt_temperaturer(tider, temperaturer, n):
     
     return glatte_tider, glatte_temp
 
-# Sette n = 5 for glatting
-n = 5
+# Sette n = 30 for glatting
+n = 30
 glatte_tider, glatte_temp = glatt_temperaturer(tider, temperaturer, n)
 
 # Plot original og glattet temperatur
