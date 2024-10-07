@@ -1,0 +1,43 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Les data fra filen og erstatt komma med punktum
+df1 = pd.read_csv('C:/Users/zahid/OneDrive/Documents/Trykk_og_temp_logg_rune.txt', sep=';', encoding='utf8')
+df1 = df1.replace(',', '.', regex=True)
+
+# Konverter 'Temperatur (gr Celsius)' til tall
+df1['Temperatur (gr Celsius)'] = pd.to_numeric(df1['Temperatur (gr Celsius)'], errors='coerce')
+
+# Konverter 'Dato og tid' til datetime-format
+df1['Dato og tid'] = pd.to_datetime(df1['Dato og tid'], format='%m.%d.%Y %H:%M', errors='coerce')
+
+# Filtrer bort rader med manglende verdier
+df1 = df1.dropna(subset=['Temperatur (gr Celsius)', 'Dato og tid'])
+
+# Glatt ut temperaturene med gjennomsnitt over 30 punkter
+def glatt_temperatur(temperaturer, n):
+    glattet = []
+    for i in range(n, len(temperaturer) - n):
+        glattet.append(sum(temperaturer[i-n:i+n+1]) / (2*n + 1))
+    return glattet
+
+# Bruker n=30 for glatting
+n = 30
+glattede_temperaturer = glatt_temperatur(df1['Temperatur (gr Celsius)'].tolist(), n)
+
+# Plot original temperatur og glattet temperatur
+plt.figure(figsize=(10, 5))
+
+# Originale temperaturdata
+plt.plot(df1['Dato og tid'], df1['Temperatur (gr Celsius)'], label="Originale temperaturdata", color='blue', alpha=0.7)
+
+# Glattet temperaturdata, vi må justere tidene for å matche lengden etter glatting
+plt.plot(df1['Dato og tid'][n: -n], glattede_temperaturer, label="Glattet med n=30", color='orange', linewidth=2)
+
+# Legg til etiketter og vis grafen
+plt.xlabel('Tid')
+plt.ylabel('Temperatur (°C)')
+plt.xticks(rotation=45)
+plt.legend()
+plt.tight_layout()
+plt.show()
