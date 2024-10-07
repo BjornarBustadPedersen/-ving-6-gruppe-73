@@ -1,0 +1,22 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+
+df1 = pd.read_csv('C:/Users/zahid/OneDrive/Documents/MET data.txt', sep=';', encoding='utf8')
+
+df2= pd.read_csv('C:/Users/zahid/OneDrive/Documents/Trykk_og_temp_logg_rune.txt', sep=';', encoding='utf8')
+
+
+df1 = df1.apply(lambda x: x.astype(str).str.replace(',', '.'))
+df2 = df2.apply(lambda x: x.astype(str).str.replace(',', '.'))
+
+df1['Tid(norsk normaltid)'] = pd.to_datetime(df1['Tid(norsk normaltid)'], format='%d.%m.%Y %H:%M', errors='coerce')
+df2['Dato og tid'] = pd.to_datetime(df2['Dato og tid'], format='%m.%d.%Y %H:%M', errors='coerce')
+
+print("MET")
+print(df1.head())
+
+print("Rune Time")
+print(df2.head())
